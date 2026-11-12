@@ -1,19 +1,33 @@
 # Windos 5 – Opera GX Virtual PC
 
-Virtueller Desktop im Browser (Opera-GX-Stil).
+Virtueller Desktop im Browser (BIOS → Login → Desktop).
 
-## Start
+## Online nutzen (GitHub Pages)
 
-1. GitHub Pages aktivieren (Settings → Pages → main / root)
-2. Seite öffnen
-3. Boot → Anmelden (Passwort: `heyduhacker123` oder leer + 2× Enter)
+1. **Settings** → **Pages**
+2. Source: **Deploy from a branch**
+3. Branch **main**, Ordner **/ (root)** → Save
+4. Nach 1–2 Minuten öffnen:
 
-## Steuerung
+**https://jsg1049294-png.github.io/windos-5/**
 
-- **Doppelklick / Doppeltipp:** App öffnen
-- **Fenster:** schließen ✕, maximieren □, minimieren ─
-- **Touch:** große Buttons, Fenster per Finger verschieben
+## Login
 
-## Passwort
+Passwort: **`heyduhacker123`**
 
-`heyduhacker123` (ZIP, Login, Downloads) – steht im Code (`script.js`).
+## Bedienung
+
+| Aktion | Maus | Touch (iPad) |
+|--------|------|--------------|
+| App öffnen | Doppelklick | Doppeltipp |
+| Fenster schließen | ✕ | ✕ antippen |
+| Maximieren | □ | □ antippen |
+| Schreiben | normal tippen | virtuelle Tastatur |
+
+## Dateien in diesem Repo
+
+Benötigt in der Root:
+- `index.html`, `script.js`, `style.css`, `manifest.json`, `service-worker.js`
+- Ordner `apps/`, `styles/`, `assets/`
+
+Falls noch Dateien fehlen: im Repo **Add file → Upload files** und den kompletten Projektordner (Inhalt von VirtualPC) hochladen.
