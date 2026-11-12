@@ -1,55 +1,483 @@
-(function(){
-const PW='heyduhacker123';
-const apps=[{id:'google',name:'Google',icon:'🔍'},{id:'games',name:'Spiele',icon:'🕹️'},{id:'roblox',name:'Roblox',icon:'🎮'},{id:'files',name:'Dateien',icon:'📁'},{id:'terminal',name:'Terminal',icon:'⬛'},{id:'notes',name:'Notizen',icon:'📝'},{id:'calculator',name:'Rechner',icon:'🔢'},{id:'settings',name:'Einstellungen',icon:'⚙️'}];
-const wins=new Map();let z=100,focused=null,vfs={};
-try{vfs=JSON.parse(localStorage.getItem('vpc_vfs')||'{}')}catch(e){}
-const $=id=>document.getElementById(id);
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-function toast(t,b,i){const el=document.createElement('div');el.className='toast';el.textContent=(i||'')+' '+t+': '+b;document.body.appendChild(el);setTimeout(()=>el.remove(),2800)}
-function saveVfs(){try{localStorage.setItem('vpc_vfs',JSON.stringify(vfs))}catch(e){}}
-async function boot(){const bios=$('bios');for(const l of['Windos 5','','CPU OK','RAM OK','Google OK','Spiele OK','Roblox OK','']){bios.textContent+=l+'\n';await sleep(50)}await sleep(80);bios.classList.add('hidden');const boot=$('boot');boot.classList.remove('hidden');const bar=$('bar');for(const [m,p] of[['System',30],['Spiele',60],['Fertig',100]]){$('loadmsg').textContent='Lade '+m+'…';bar.style.width=p+'%';await sleep(160)}boot.classList.add('fade');await sleep(280);boot.classList.add('hidden')}
-function login(){return new Promise(r=>{const ls=$('login');ls.classList.remove('hidden');$('lf').onsubmit=e=>{e.preventDefault();if($('lp').value===PW||$('lp').value===''){ls.classList.add('hidden');$('desk').classList.remove('hidden');r()}else $('le').textContent='Falsches Passwort'};setTimeout(()=>$('lp').focus(),80)})}
-function desktop(){const icons=[{id:'google',name:'Google',icon:'🔍'},{id:'games',name:'Spiele',icon:'🕹️'},{id:'roblox',name:'Roblox',icon:'🎮'},{id:'files',name:'Dateien',icon:'📁'},{id:'terminal',name:'Terminal',icon:'⬛'},{id:'notes',name:'Notizen',icon:'📝'},{id:'calculator',name:'Rechner',icon:'🔢'}];const cont=$('icons');icons.forEach(ic=>{const el=document.createElement('div');el.className='icon';el.innerHTML=`<div class="ii">${ic.icon}</div><div class="il">${ic.name}</div>`;let t=0;const open=()=>openApp(ic.id);el.onclick=e=>{e.stopPropagation();const n=Date.now();if(n-t<400){open();t=0}else if(el.classList.contains('on'))open();else{document.querySelectorAll('.icon').forEach(x=>x.classList.remove('on'));el.classList.add('on');t=n}};el.ondblclick=open;cont.appendChild(el)});apps.forEach(a=>{const el=document.createElement('div');el.className='si';el.innerHTML=`<span style="font-size:20px">${a.icon}</span><span>${a.name}</span>`;el.onclick=()=>{openApp(a.id);$('start').classList.add('hidden')};$('alist').appendChild(el)});$('sbtn').onclick=()=>$('start').classList.toggle('hidden');$('desk').onclick=e=>{if(e.target.id==='desk'||e.target.classList.contains('wp'))$('start').classList.add('hidden')}}
-function openApp(id,extra){const app=apps.find(a=>a.id===id)||{id,name:id,icon:'📦'};const wid='w'+Date.now();const sz={google:[820,560],games:[520,480],roblox:[600,460],game:[400,480],files:[440,340],terminal:[460,300]}[id]||[400,300];const win=document.createElement('div');win.className='win focus';win.id=wid;win.style.cssText=`left:${26+wins.size*12}px;top:${20+wins.size*12}px;width:${sz[0]}px;height:${sz[1]}px;z-index:${++z}`;const title=(extra&&extra.title)||app.name;win.innerHTML=`<div class="wt"><span style="margin-right:6px">${(extra&&extra.icon)||app.icon}</span><span class="t">${title}</span><div class="wc"><button class="wb" data-a="min">─</button><button class="wb" data-a="max">□</button><button class="wb x" data-a="close">✕</button></div></div><div class="wbody" id="${wid}_c"></div>`;$('wins').appendChild(win);wins.set(wid,{el:win,id:wid,appId:id,max:false,min:false});win.querySelectorAll('.wb').forEach(btn=>{const f=e=>{e.preventDefault();e.stopPropagation();const a=btn.dataset.a;if(a==='close')closeW(wid);else if(a==='min')minW(wid);else if(a==='max')maxW(wid)};btn.onclick=f;btn.ontouchend=e=>{e.preventDefault();f(e)}});win.onmousedown=()=>focusW(wid);drag(win,wid);render(id,$(wid+'_c'),wid,extra);focusW(wid);taskbar()}
-function render(id,c,wid,extra){
-if(id==='calculator'){c.innerHTML=`<div class="calc"><div class="d" id="${wid}_d">0</div>${['C','÷','×','⌫','7','8','9','-','4','5','6','+','1','2','3','=','0','.'].map(x=>`<button data-k="${x}">${x}</button>`).join('')}</div>`;let cur='0',op=null,prev=null;const d=$(wid+'_d');c.querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=b.dataset.k;if((k>='0'&&k<='9')||k==='.'){cur=cur==='0'&&k!=='.'?k:cur+k;d.textContent=cur}else if(k==='C'){cur='0';op=prev=null;d.textContent=cur}else if(k==='⌫'){cur=cur.slice(0,-1)||'0';d.textContent=cur}else if(k==='='){if(op&&prev!==null){const a=parseFloat(prev),b2=parseFloat(cur);cur=String({'+':a+b2,'-':a-b2,'×':a*b2,'÷':a/b2}[op]);d.textContent=cur;op=prev=null}}else{prev=cur;op=k;cur='0'}})}
-else if(id==='notes'){c.innerHTML=`<textarea class="notes" id="${wid}_ta"></textarea>`;const ta=$(wid+'_ta');ta.value=localStorage.getItem('vpc_notes')||'';ta.oninput=()=>localStorage.setItem('vpc_notes',ta.value)}
-else if(id==='terminal'){c.innerHTML=`<div class="term"><div class="term-o" id="${wid}_o">Windos 5\nhelp · games · google\n\n</div><div class="term-r"><span style="color:#0f0;margin-right:6px">></span><input id="${wid}_i"></div></div>`;const o=$(wid+'_o'),i=$(wid+'_i');i.onkeydown=e=>{if(e.key!=='Enter')return;const cmd=i.value.trim();i.value='';o.textContent+=`> ${cmd}\n`;if(cmd==='help')o.textContent+='help, clear, games, google, ls\n';else if(cmd==='clear')o.textContent='';else if(cmd==='games')openApp('games');else if(cmd==='google')openApp('google');else if(cmd==='ls')o.textContent+=(Object.keys(vfs).join('\n')||'(leer)')+'\n';else if(cmd)o.textContent+='?\n';o.scrollTop=1e9};setTimeout(()=>i.focus(),50)}
-else if(id==='google')googleApp(c,wid);
-else if(id==='games')gamesFolder(c,wid);
-else if(id==='game')playGame(c,wid,extra&&extra.n||1);
-else if(id==='roblox')robloxApp(c,wid);
-else if(id==='files')filesApp(c,wid);
-else if(id==='settings')c.innerHTML=`<div style="padding:16px"><h2>Einstellungen</h2><p style="opacity:.7;margin-top:8px">Windos 5 · Google · 10 Spiele</p></div>`;
-}
-function googleApp(c,wid){
-c.innerHTML=`<div class="gwrap"><div class="gbar"><button type="button" id="${wid}_h">⌂</button><input id="${wid}_q" placeholder="Bei Google suchen"><button type="button" id="${wid}_go" class="btn btn-p" style="padding:6px 12px;color:#fff">Suche</button></div><div class="gpane" id="${wid}_p"></div></div>`;
-const pane=$(wid+'_p'),inp=$(wid+'_q');
-function home(){pane.innerHTML=`<div class="ghome"><div class="glogo">Google</div><form id="${wid}_f"><input id="${wid}_q2" placeholder="Suchen…"><button type="submit">Google Suche</button></form></div>`;$(wid+'_f').onsubmit=e=>{e.preventDefault();go($(wid+'_q2').value)};inp.value=''}
-function go(q){q=(q||'').trim();if(!q)return home();inp.value=q;const u='https://www.google.com/search?igu=1&q='+encodeURIComponent(q);pane.innerHTML='';const fr=document.createElement('iframe');fr.src=u;fr.style.cssText='position:absolute;inset:0;width:100%;height:100%;border:none;background:#fff';pane.appendChild(fr);setTimeout(()=>{const tip=document.createElement('div');tip.style.cssText='position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;z-index:5;display:flex;gap:8px';tip.innerHTML='<span>Leer?</span>';const b=document.createElement('button');b.className='btn btn-p';b.style.cssText='padding:4px 10px;font-size:12px';b.textContent='DuckDuckGo';b.onclick=()=>{fr.src='https://duckduckgo.com/?q='+encodeURIComponent(q)};tip.appendChild(b);pane.appendChild(tip);setTimeout(()=>tip.remove(),5000)},3500)}
-$(wid+'_go').onclick=()=>go(inp.value);inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go(inp.value)}}$(wid+'_h').onclick=home;home();
-}
-const GAMES=[{n:1,name:'Spiel 1',sub:'Ragdoll Sandbox',desc:'Physik-Sandbox (eigenes Spiel)'},{n:2,name:'Spiel 2',sub:'Snake',desc:'Schlange steuern'},{n:3,name:'Spiel 3',sub:'Pong',desc:'Ball spielen'},{n:4,name:'Spiel 4',sub:'Breakout',desc:'Ziegel brechen'},{n:5,name:'Spiel 5',sub:'Memory',desc:'Paare finden'},{n:6,name:'Spiel 6',sub:'TicTacToe',desc:'3 gewinnt'},{n:7,name:'Spiel 7',sub:'Clicker',desc:'Klicken'},{n:8,name:'Spiel 8',sub:'Flappy',desc:'Fliegen'},{n:9,name:'Spiel 9',sub:'Maze',desc:'Labyrinth'},{n:10,name:'Spiel 10',sub:'Reaction',desc:'Reaktion'}];
-function gamesFolder(c,wid){c.innerHTML=`<div class="gfolder"><h2>🕹️ Spiele</h2><p class="desc">10 eigene Mini-Spiele. Keine Roblox-Kopien.</p><div class="ggrid">${GAMES.map(g=>`<button type="button" class="gcard" data-n="${g.n}"><div class="gn">${g.name}</div><div class="gs">${g.sub}</div><div class="gd">${g.desc}</div></button>`).join('')}</div></div>`;c.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{const n=+b.dataset.n;const g=GAMES.find(x=>x.n===n);openApp('game',{n,title:g.name+' – '+g.sub,icon:'🕹️'})})}
-function playGame(c,wid,n){c.innerHTML=`<div class="gplay"><canvas id="${wid}_cv" width="360" height="400"></canvas><div class="ginfo" id="${wid}_info"></div><button class="btn btn-s" id="${wid}_rst">Neu</button></div>`;const canvas=$(wid+'_cv'),ctx=canvas.getContext('2d'),info=$(wid+'_info');let stop=()=>{};if(n===1)stop=g1(canvas,ctx,info);else if(n===2)stop=g2(canvas,ctx,info);else if(n===3)stop=g3(canvas,ctx,info);else if(n===4)stop=g4(canvas,ctx,info);else if(n===5)stop=g5(canvas,ctx,info);else if(n===6)stop=g6(canvas,ctx,info);else if(n===7)stop=g7(canvas,ctx,info);else if(n===8)stop=g8(canvas,ctx,info);else if(n===9)stop=g9(canvas,ctx,info);else stop=g10(canvas,ctx,info);$(wid+'_rst').onclick=()=>{stop();playGame(c,wid,n)}}
-function g1(cv,ctx,info){const W=360,H=400;let parts=[],drag=null;function add(x,y){parts.push({x,y,vx:0,vy:0,r:14})}add(180,80);add(150,140);add(210,140);info.textContent='Klick = Körper · Ziehen = bewegen';let raf;function loop(){ctx.fillStyle='#0d0d12';ctx.fillRect(0,0,W,H);for(const p of parts){if(drag!==p){p.vy+=.25;p.vx*=.99;p.vy*=.99;p.x+=p.vx;p.y+=p.vy}if(p.y+p.r>H){p.y=H-p.r;p.vy*=-.5}if(p.x<p.r){p.x=p.r;p.vx*=-.5}if(p.x+p.r>W){p.x=W-p.r;p.vx*=-.5}for(const o of parts){if(o===p)continue;const dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1,m=p.r+o.r;if(d<m){const nx=dx/d,ny=dy/d,ov=m-d;p.x-=nx*ov/2;p.y-=ny*ov/2;o.x+=nx*ov/2;o.y+=ny*ov/2}}ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.3);ctx.fillStyle='#ff1b2d';ctx.fill()}raf=requestAnimationFrame(loop)}loop();const pos=e=>{const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(W/r.width),y:(t.clientY-r.top)*(H/r.height)}};const down=e=>{e.preventDefault();const p=pos(e);for(let i=parts.length-1;i>=0;i--){if(Math.hypot(parts[i].x-p.x,parts[i].y-p.y)<18){drag=parts[i];return}}add(p.x,p.y)};const move=e=>{if(!drag)return;e.preventDefault();const p=pos(e);drag.vx=(p.x-drag.x)*.5;drag.vy=(p.y-drag.y)*.5;drag.x=p.x;drag.y=p.y};cv.onmousedown=down;cv.onmousemove=move;window.addEventListener('mouseup',()=>drag=null);cv.ontouchstart=down;cv.ontouchmove=move;cv.ontouchend=()=>drag=null;return()=>cancelAnimationFrame(raf)}
-function g2(cv,ctx,info){const S=20;let snake=[{x:5,y:10}],dir={x:1,y:0},food={x:12,y:8},dead=false,sc=0;info.textContent='Pfeile · Score 0';const iv=setInterval(()=>{if(dead)return;const h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};if(h.x<0||h.y<0||h.x>=18||h.y>=20||snake.some(s=>s.x===h.x&&s.y===h.y)){dead=true;info.textContent='Game Over '+sc;return}snake.unshift(h);if(h.x===food.x&&h.y===food.y){sc++;food={x:0|Math.random()*18,y:0|Math.random()*20};info.textContent='Score '+sc}else snake.pop();ctx.fillStyle='#111';ctx.fillRect(0,0,360,400);ctx.fillStyle='#0f0';snake.forEach(s=>ctx.fillRect(s.x*S,s.y*S,S-1,S-1));ctx.fillStyle='#f44';ctx.fillRect(food.x*S,food.y*S,S-1,S-1)},120);const kd=e=>{const k=e.key;if(k==='ArrowUp'&&!dir.y)dir={x:0,y:-1};if(k==='ArrowDown'&&!dir.y)dir={x:0,y:1};if(k==='ArrowLeft'&&!dir.x)dir={x:-1,y:0};if(k==='ArrowRight'&&!dir.x)dir={x:1,y:0}};window.addEventListener('keydown',kd);cv.onclick=e=>{const r=cv.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;if(y<130&&!dir.y)dir={x:0,y:-1};else if(y>270&&!dir.y)dir={x:0,y:1};else if(x<180&&!dir.x)dir={x:-1,y:0};else if(!dir.x)dir={x:1,y:0}};return()=>{clearInterval(iv);window.removeEventListener('keydown',kd)}}
-function g3(cv,ctx,info){let bx=180,by=200,vx=3,vy=2,py=160,sc=0;info.textContent='Schläger bewegen';const iv=setInterval(()=>{bx+=vx;by+=vy;if(by<0||by>400)vy*=-1;if(bx<20&&by>py&&by<py+60){vx=Math.abs(vx)+.15;sc++;info.textContent='Score '+sc}if(bx>350)vx*=-1;if(bx<0){bx=180;by=200;vx=3;sc=0}ctx.fillStyle='#111';ctx.fillRect(0,0,360,400);ctx.fillStyle='#fff';ctx.fillRect(10,py,8,60);ctx.beginPath();ctx.arc(bx,by,8,0,6.3);ctx.fill()},16);cv.onmousemove=e=>{const r=cv.getBoundingClientRect();py=Math.max(0,Math.min(340,(e.clientY-r.top)*(400/r.height)-30))};return()=>clearInterval(iv)}
-function g4(cv,ctx,info){const bricks=[];for(let r=0;r<4;r++)for(let c=0;c<8;c++)bricks.push({x:c*44+8,y:r*22+30,w:40,h:16,on:1});let px=150,bx=180,by=300,vx=2.5,vy=-2.5,sc=0;info.textContent='Breakout';const iv=setInterval(()=>{bx+=vx;by+=vy;if(bx<0||bx>360)vx*=-1;if(by<0)vy*=-1;if(by>390){bx=180;by=300;vy=-2.5}if(by>360&&bx>px&&bx<px+60)vy=-Math.abs(vy);bricks.forEach(b=>{if(b.on&&bx>b.x&&bx<b.x+b.w&&by>b.y&&by<b.y+b.h){b.on=0;vy*=-1;sc++;info.textContent='Score '+sc}});ctx.fillStyle='#111';ctx.fillRect(0,0,360,400);bricks.forEach(b=>{if(b.on){ctx.fillStyle='#ff1b2d';ctx.fillRect(b.x,b.y,b.w,b.h)}});ctx.fillStyle='#fff';ctx.fillRect(px,370,60,10);ctx.beginPath();ctx.arc(bx,by,6,0,6.3);ctx.fill()},16);cv.onmousemove=e=>{const r=cv.getBoundingClientRect();px=Math.max(0,Math.min(300,(e.clientX-r.left)*(360/r.width)-30))};return()=>clearInterval(iv)}
-function g5(cv,ctx,info){const s=['🍎','🍋','🍇','🍒','🥝','🍑'];const syms=[...s,...s].sort(()=>Math.random()-.5);const cards=syms.map(s=>({s,open:0,done:0}));let first=null,lock=0,pairs=0;info.textContent='Memory';function draw(){ctx.fillStyle='#111';ctx.fillRect(0,0,360,400);cards.forEach((c,i)=>{const x=(i%4)*88+12,y=(0|i/4)*90+40;ctx.fillStyle=c.done||c.open?'#2a2a2a':'#ff1b2d';ctx.fillRect(x,y,80,80);if(c.open||c.done){ctx.font='32px serif';ctx.fillText(c.s,x+24,y+52)}})}draw();cv.onclick=e=>{if(lock)return;const r=cv.getBoundingClientRect();const x=(e.clientX-r.left)*(360/r.width),y=(e.clientY-r.top)*(400/r.height);const i=(0|((y-40)/90))*4+(0|((x-12)/88));if(i<0||i>11)return;const c=cards[i];if(c.done||c.open)return;c.open=1;draw();if(!first){first=c;return}lock=1;setTimeout(()=>{if(first.s===c.s){first.done=c.done=1;pairs++;info.textContent='Paare '+pairs+'/6'}else{first.open=c.open=0}first=null;lock=0;draw()},450)};return()=>{}}
-function g6(cv,ctx,info){const b=Array(9).fill('');let turn='X',over=0;info.textContent='Du bist X';function draw(){ctx.fillStyle='#111';ctx.fillRect(0,0,360,400);ctx.strokeStyle='#444';for(let i=1;i<3;i++){ctx.beginPath();ctx.moveTo(i*120,20);ctx.lineTo(i*120,380);ctx.stroke();ctx.beginPath();ctx.moveTo(0,20+i*120);ctx.lineTo(360,20+i*120);ctx.stroke()}ctx.font='48px sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff';b.forEach((v,i)=>{if(v)ctx.fillText(v,(i%3)*120+60,20+(0|i/3)*120+75)})}function win(p){return[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].some(L=>L.every(i=>b[i]===p))}draw();cv.onclick=e=>{if(over)return;const r=cv.getBoundingClientRect();const x=(e.clientX-r.left)*(360/r.width),y=(e.clientY-r.top)*(400/r.height)-20;const i=(0|(y/120))*3+(0|(x/120));if(i<0||i>8||b[i])return;b[i]=turn;if(win(turn)){over=1;info.textContent=turn+' gewinnt';draw();return}if(b.every(Boolean)){over=1;info.textContent='Unentschieden';draw();return}turn=turn==='X'?'O':'X';info.textContent='Zug '+turn;draw()};return()=>{}}
-function g7(cv,ctx,info){let sc=0,R=40;info.textContent='Klick den Kreis';function draw(){ctx.fillStyle='#111';ctx.fillRect(0,0,360,400);ctx.beginPath();ctx.arc(180,200,R,0,6.3);ctx.fillStyle='#ff1b2d';ctx.fill();ctx.fillStyle='#fff';ctx.font='20px sans-serif';ctx.textAlign='center';ctx.fillText(sc,180,206)}draw();cv.onclick=e=>{const r=cv.getBoundingClientRect();const x=(e.clientX-r.left)*(360/r.width),y=(e.clientY-r.top)*(400/r.height);if(Math.hypot(x-180,y-200)<R){sc++;R=Math.max(18,40-sc/4);info.textContent='Punkte '+sc;draw()}};return()=>{}}
-function g8(cv,ctx,info){let y=200,vy=0,pipes=[{x:360,gap:140}],sc=0,dead=0;info.textContent='Tippen = fliegen';const iv=setInterval(()=>{if(dead)return;vy+=.4;y+=vy;pipes.forEach(p=>{p.x-=2;if(p.x<-40){p.x=360;p.gap=70+Math.random()*180;sc++;info.textContent='Score '+sc}if(p.x<50&&p.x>0&&(y<p.gap||y>p.gap+80)){dead=1;info.textContent='Game Over '+sc}});if(y>400||y<0){dead=1;info.textContent='Game Over '+sc}ctx.fillStyle='#87ceeb';ctx.fillRect(0,0,360,400);pipes.forEach(p=>{ctx.fillStyle='#0a0';ctx.fillRect(p.x,0,40,p.gap);ctx.fillRect(p.x,p.gap+80,40,400)});ctx.fillStyle='#ff1b2d';ctx.beginPath();ctx.arc(40,y,12,0,6.3);ctx.fill()},16);const flap=e=>{e.preventDefault();if(!dead)vy=-6};cv.onmousedown=flap;cv.ontouchstart=flap;return()=>clearInterval(iv)}
-function g9(cv,ctx,info){const N=15,C=24;const g=[];for(let y=0;y<N;y++){g[y]=[];for(let x=0;x<N;x++)g[y][x]=1}function carve(x,y){g[y][x]=0;[[0,-2],[0,2],[-2,0],[2,0]].sort(()=>Math.random()-.5).forEach(([dx,dy])=>{const nx=x+dx,ny=y+dy;if(ny>0&&ny<N-1&&nx>0&&nx<N-1&&g[ny][nx]===1){g[y+dy/2][x+dx/2]=0;carve(nx,ny)}})}carve(1,1);g[N-2][N-2]=0;let px=1,py=1;info.textContent='Ausgang unten rechts';function draw(){ctx.fillStyle='#111';ctx.fillRect(0,0,360,400);for(let y=0;y<N;y++)for(let x=0;x<N;x++){ctx.fillStyle=g[y][x]?'#333':'#1a1a1a';ctx.fillRect(x*C,y*C+10,C-1,C-1)}ctx.fillStyle='#0f0';ctx.fillRect((N-2)*C,(N-2)*C+10,C-1,C-1);ctx.fillStyle='#ff1b2d';ctx.fillRect(px*C+4,py*C+14,C-8,C-8)}draw();function move(dx,dy){const nx=px+dx,ny=py+dy;if(nx>=0&&ny>=0&&nx<N&&ny<N&&!g[ny][nx]){px=nx;py=ny;draw();if(px===N-2&&py===N-2)info.textContent='Geschafft!'}}const kd=e=>{if(e.key==='ArrowUp')move(0,-1);if(e.key==='ArrowDown')move(0,1);if(e.key==='ArrowLeft')move(-1,0);if(e.key==='ArrowRight')move(1,0)};window.addEventListener('keydown',kd);cv.onclick=e=>{const r=cv.getBoundingClientRect();const x=e.clientX-r.left-px*C-C/2,y=e.clientY-r.top-py*C-10-C/2;if(Math.abs(x)>Math.abs(y))move(x>0?1:-1,0);else move(0,y>0?1:-1)};return()=>window.removeEventListener('keydown',kd)}
-function g10(cv,ctx,info){let state='w',t0=0,best=null;info.textContent='Warten auf Grün…';ctx.fillStyle='#a00';ctx.fillRect(0,0,360,400);ctx.fillStyle='#fff';ctx.font='18px sans-serif';ctx.textAlign='center';ctx.fillText('Warten…',180,200);const t=setTimeout(()=>{state='go';t0=performance.now();ctx.fillStyle='#0a0';ctx.fillRect(0,0,360,400);ctx.fillStyle='#fff';ctx.fillText('JETZT!',180,200);info.textContent='LOS!'},1000+Math.random()*2000);cv.onclick=()=>{if(state==='w'){info.textContent='Zu früh!';clearTimeout(t);state='d'}else if(state==='go'){const ms=0|performance.now()-t0;best=best==null?ms:Math.min(best,ms);info.textContent=ms+' ms · Best '+best;state='d';ctx.fillStyle='#111';ctx.fillRect(0,0,360,400);ctx.fillStyle='#fff';ctx.fillText(ms+' ms',180,200)}};return()=>clearTimeout(t)}
-function robloxApp(c,wid){c.innerHTML=`<div class="rx"><div class="big">🎮</div><h1>Roblox</h1><p>Launcher</p><div class="acts"><button class="btn btn-p" id="${wid}_c">▶ Client starten</button><button class="btn btn-s" id="${wid}_w">Website</button></div><div class="rx-note">Zum echten Zocken: Roblox-Client installieren. 10 Spiele im Ordner <b>Spiele</b> laufen direkt hier (eigene Mini-Spiele).</div></div>`;$(wid+'_c').onclick=()=>{const a=document.createElement('a');a.href='roblox://';document.body.appendChild(a);a.click();a.remove();toast('Roblox','Client…','🎮')};$(wid+'_w').onclick=()=>{c.style.position='relative';c.innerHTML=`<div class="rxframe"><div class="top"><button class="btn btn-s" id="${wid}_b">←</button></div><iframe src="https://translate.google.com/translate?hl=de&sl=auto&tl=de&u=${encodeURIComponent('https://www.roblox.com')}" style="flex:1;border:none;width:100%"></iframe></div>`;$(wid+'_b').onclick=()=>robloxApp(c,wid)}}
-function filesApp(c,wid){function draw(){const n=Object.keys(vfs);c.innerHTML=`<div class="files"><h2>📁 Dateien</h2><input type="file" id="${wid}_f" multiple style="display:none"><button class="btn btn-p" id="${wid}_u">📤 Hochladen</button><div style="margin-top:12px">${n.length?n.map(x=>`<div class="frow"><span>📄</span><div class="fmeta"><div class="fname">${x}</div></div><button class="btn btn-p" data-d="${x}" style="padding:6px 10px;font-size:12px">⬇</button><button class="btn btn-s" data-r="${x}" style="padding:6px 8px">🗑</button></div>`).join(''):'<p style="opacity:.5;padding:12px;text-align:center">Leer</p>'}</div>`;$(wid+'_u').onclick=()=>$(wid+'_f').click();$(wid+'_f').onchange=async e=>{for(const f of e.target.files||[]){if(f.size>3e6)continue;const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});vfs[f.name]={data,size:f.size};toast('OK',f.name,'📥')}saveVfs();draw()};c.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const a=document.createElement('a');a.href=vfs[b.dataset.d].data;a.download=b.dataset.d;a.click()});c.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{delete vfs[b.dataset.r];saveVfs();draw()})}draw()}
-function closeW(id){const w=wins.get(id);if(!w)return;w.el.remove();wins.delete(id);taskbar()}
-function minW(id){const w=wins.get(id);if(!w)return;w.el.classList.add('min');w.min=true;taskbar()}
-function maxW(id){const w=wins.get(id);if(!w)return;w.el.classList.toggle('max');w.max=w.el.classList.contains('max')}
-function focusW(id){wins.forEach((w,i)=>w.el.classList.toggle('focus',i===id));const w=wins.get(id);if(w){w.el.style.zIndex=++z;w.el.classList.remove('min');w.min=false;focused=id}taskbar()}
-function taskbar(){const tb=$('tb-apps');tb.innerHTML='';wins.forEach((w,id)=>{const app=apps.find(a=>a.id===w.appId)||{icon:'🕹️'};const b=document.createElement('button');b.className='tb-a'+(focused===id?' on':'');b.textContent=app.icon||'📦';b.onclick=()=>{if(w.min||focused!==id)focusW(id);else minW(id)};tb.appendChild(b)})}
-function drag(el,id){const tb=el.querySelector('.wt');let ox,oy,sl,st,d=false;const start=(x,y)=>{const w=wins.get(id);if(!w||w.max)return;d=true;ox=x;oy=y;sl=parseInt(el.style.left)||0;st=parseInt(el.style.top)||0;focusW(id)};const move=(x,y)=>{if(!d)return;el.style.left=Math.max(0,sl+x-ox)+'px';el.style.top=Math.max(0,st+y-oy)+'px'};tb.onmousedown=e=>{if(e.target.closest('.wb'))return;start(e.clientX,e.clientY);e.preventDefault()};window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));window.addEventListener('mouseup',()=>d=false);tb.ontouchstart=e=>{if(e.target.closest('.wb'))return;const t=e.touches[0];start(t.clientX,t.clientY)};tb.ontouchmove=e=>{if(!d)return;e.preventDefault();const t=e.touches[0];move(t.clientX,t.clientY)};tb.ontouchend=()=>d=false}
-function clock(){const t=()=>$('clock').textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});t();setInterval(t,1000)}
-boot().then(login).then(()=>{desktop();clock();toast('Windos 5','Google + Spiele bereit','🔴')});
+(function () {
+  "use strict";
+  var PW = "heyduhacker123";
+  var apps = [
+    { id: "google", name: "Google", icon: "🔍" },
+    { id: "games", name: "Spiele", icon: "🕹️" },
+    { id: "roblox", name: "Roblox", icon: "🎮" },
+    { id: "files", name: "Dateien", icon: "📁" },
+    { id: "terminal", name: "Terminal", icon: "⬛" },
+    { id: "notes", name: "Notizen", icon: "📝" },
+    { id: "calculator", name: "Rechner", icon: "🔢" },
+    { id: "settings", name: "Einstellungen", icon: "⚙️" }
+  ];
+  var wins = new Map();
+  var z = 100;
+  var focused = null;
+  var vfs = {};
+  try { vfs = JSON.parse(localStorage.getItem("vpc_vfs") || "{}"); } catch (e) {}
+  function $(id) { return document.getElementById(id); }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function toast(t, b, i) {
+    var el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = (i || "") + " " + t + ": " + b;
+    document.body.appendChild(el);
+    setTimeout(function () { el.remove(); }, 2800);
+  }
+  function saveVfs() {
+    try { localStorage.setItem("vpc_vfs", JSON.stringify(vfs)); } catch (e) {}
+  }
+
+  async function boot() {
+    var bios = $("bios");
+    var lines = ["Windos 5", "", "CPU OK", "RAM OK", "Google OK", "Spiele OK", ""];
+    for (var i = 0; i < lines.length; i++) {
+      bios.textContent += lines[i] + "\n";
+      await sleep(40);
+    }
+    await sleep(60);
+    bios.classList.add("hidden");
+    var bootEl = $("boot");
+    bootEl.classList.remove("hidden");
+    var bar = $("bar");
+    var steps = [["System", 30], ["Spiele", 70], ["Fertig", 100]];
+    for (var j = 0; j < steps.length; j++) {
+      $("loadmsg").textContent = "Lade " + steps[j][0] + "…";
+      bar.style.width = steps[j][1] + "%";
+      await sleep(150);
+    }
+    bootEl.classList.add("fade");
+    await sleep(250);
+    bootEl.classList.add("hidden");
+  }
+
+  function login() {
+    return new Promise(function (resolve) {
+      var ls = $("login");
+      ls.classList.remove("hidden");
+      $("lf").onsubmit = function (e) {
+        e.preventDefault();
+        var v = $("lp").value;
+        if (v === PW || v === "") {
+          ls.classList.add("hidden");
+          $("desk").classList.remove("hidden");
+          resolve();
+        } else {
+          $("le").textContent = "Falsches Passwort";
+        }
+      };
+      setTimeout(function () { $("lp").focus(); }, 80);
+    });
+  }
+
+  function desktop() {
+    var icons = [
+      { id: "google", name: "Google", icon: "🔍" },
+      { id: "games", name: "Spiele", icon: "🕹️" },
+      { id: "roblox", name: "Roblox", icon: "🎮" },
+      { id: "files", name: "Dateien", icon: "📁" },
+      { id: "terminal", name: "Terminal", icon: "⬛" },
+      { id: "notes", name: "Notizen", icon: "📝" },
+      { id: "calculator", name: "Rechner", icon: "🔢" }
+    ];
+    var cont = $("icons");
+    icons.forEach(function (ic) {
+      var el = document.createElement("div");
+      el.className = "icon";
+      el.innerHTML = '<div class="ii">' + ic.icon + '</div><div class="il">' + ic.name + "</div>";
+      var t = 0;
+      function open() { openApp(ic.id); }
+      el.onclick = function (e) {
+        e.stopPropagation();
+        var n = Date.now();
+        if (n - t < 400) { open(); t = 0; }
+        else if (el.classList.contains("on")) open();
+        else {
+          document.querySelectorAll(".icon").forEach(function (x) { x.classList.remove("on"); });
+          el.classList.add("on");
+          t = n;
+        }
+      };
+      el.ondblclick = open;
+      cont.appendChild(el);
+    });
+    var list = $("alist");
+    apps.forEach(function (a) {
+      var el = document.createElement("div");
+      el.className = "si";
+      el.innerHTML = '<span style="font-size:20px">' + a.icon + "</span><span>" + a.name + "</span>";
+      el.onclick = function () {
+        openApp(a.id);
+        $("start").classList.add("hidden");
+      };
+      list.appendChild(el);
+    });
+    $("sbtn").onclick = function () { $("start").classList.toggle("hidden"); };
+    $("desk").onclick = function (e) {
+      if (e.target.id === "desk" || e.target.classList.contains("wp")) {
+        $("start").classList.add("hidden");
+      }
+    };
+  }
+
+  function openApp(id, extra) {
+    var app = apps.find(function (a) { return a.id === id; }) || { id: id, name: id, icon: "📦" };
+    var wid = "w" + Date.now();
+    var sizes = { google: [820, 560], games: [520, 480], roblox: [600, 460], game: [400, 480], files: [440, 340], terminal: [460, 300] };
+    var sz = sizes[id] || [400, 300];
+    var win = document.createElement("div");
+    win.className = "win focus";
+    win.id = wid;
+    win.style.cssText = "left:" + (26 + wins.size * 12) + "px;top:" + (20 + wins.size * 12) + "px;width:" + sz[0] + "px;height:" + sz[1] + "px;z-index:" + (++z);
+    var title = (extra && extra.title) || app.name;
+    var icon = (extra && extra.icon) || app.icon;
+    win.innerHTML = '<div class="wt"><span style="margin-right:6px">' + icon + '</span><span class="t">' + title + '</span><div class="wc"><button class="wb" data-a="min">─</button><button class="wb" data-a="max">□</button><button class="wb x" data-a="close">✕</button></div></div><div class="wbody" id="' + wid + '_c"></div>';
+    $("wins").appendChild(win);
+    wins.set(wid, { el: win, id: wid, appId: id, max: false, min: false });
+    win.querySelectorAll(".wb").forEach(function (btn) {
+      function f(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var a = btn.getAttribute("data-a");
+        if (a === "close") closeW(wid);
+        else if (a === "min") minW(wid);
+        else if (a === "max") maxW(wid);
+      }
+      btn.onclick = f;
+      btn.ontouchend = function (e) { e.preventDefault(); f(e); };
+    });
+    win.onmousedown = function () { focusW(wid); };
+    drag(win, wid);
+    render(id, $(wid + "_c"), wid, extra);
+    focusW(wid);
+    taskbar();
+  }
+
+  function render(id, c, wid, extra) {
+    if (id === "calculator") {
+      c.innerHTML = '<div class="calc"><div class="d" id="' + wid + '_d">0</div>' +
+        ["C", "÷", "×", "⌫", "7", "8", "9", "-", "4", "5", "6", "+", "1", "2", "3", "=", "0", "."].map(function (x) {
+          return '<button data-k="' + x + '">' + x + "</button>";
+        }).join("") + "</div>";
+      var cur = "0", op = null, prev = null;
+      var d = $(wid + "_d");
+      c.querySelectorAll("button").forEach(function (b) {
+        b.onclick = function () {
+          var k = b.getAttribute("data-k");
+          if ((k >= "0" && k <= "9") || k === ".") {
+            cur = cur === "0" && k !== "." ? k : cur + k;
+            d.textContent = cur;
+          } else if (k === "C") { cur = "0"; op = null; prev = null; d.textContent = cur; }
+          else if (k === "⌫") { cur = cur.slice(0, -1) || "0"; d.textContent = cur; }
+          else if (k === "=") {
+            if (op && prev !== null) {
+              var a = parseFloat(prev), b2 = parseFloat(cur);
+              var map = { "+": a + b2, "-": a - b2, "×": a * b2, "÷": a / b2 };
+              cur = String(map[op]);
+              d.textContent = cur;
+              op = null; prev = null;
+            }
+          } else { prev = cur; op = k; cur = "0"; }
+        };
+      });
+    } else if (id === "notes") {
+      c.innerHTML = '<textarea class="notes" id="' + wid + '_ta"></textarea>';
+      var ta = $(wid + "_ta");
+      ta.value = localStorage.getItem("vpc_notes") || "";
+      ta.oninput = function () { localStorage.setItem("vpc_notes", ta.value); };
+    } else if (id === "terminal") {
+      c.innerHTML = '<div class="term"><div class="term-o" id="' + wid + '_o">Windos 5\nhelp · games · google\n\n</div><div class="term-r"><span style="color:#0f0;margin-right:6px">></span><input id="' + wid + '_i"></div></div>';
+      var o = $(wid + "_o"), i = $(wid + "_i");
+      i.onkeydown = function (e) {
+        if (e.key !== "Enter") return;
+        var cmd = i.value.trim();
+        i.value = "";
+        o.textContent += "> " + cmd + "\n";
+        if (cmd === "help") o.textContent += "help, clear, games, google, ls\n";
+        else if (cmd === "clear") o.textContent = "";
+        else if (cmd === "games") openApp("games");
+        else if (cmd === "google") openApp("google");
+        else if (cmd === "ls") o.textContent += (Object.keys(vfs).join("\n") || "(leer)") + "\n";
+        else if (cmd) o.textContent += "?\n";
+        o.scrollTop = 1e9;
+      };
+      setTimeout(function () { i.focus(); }, 50);
+    } else if (id === "google") googleApp(c, wid);
+    else if (id === "games") gamesFolder(c, wid);
+    else if (id === "game") playGame(c, wid, (extra && extra.n) || 1);
+    else if (id === "roblox") robloxApp(c, wid);
+    else if (id === "files") filesApp(c, wid);
+    else if (id === "settings") {
+      c.innerHTML = '<div style="padding:16px"><h2>Einstellungen</h2><p style="opacity:.7;margin-top:8px">Windos 5 · Google · 10 Spiele</p></div>';
+    }
+  }
+
+  function googleApp(c, wid) {
+    c.innerHTML = '<div class="gwrap"><div class="gbar"><button type="button" id="' + wid + '_h">⌂</button><input id="' + wid + '_q" placeholder="Bei Google suchen"><button type="button" id="' + wid + '_go" class="btn btn-p" style="padding:6px 12px;color:#fff">Suche</button></div><div class="gpane" id="' + wid + '_p"></div></div>';
+    var pane = $(wid + "_p");
+    var inp = $(wid + "_q");
+    function home() {
+      pane.innerHTML = '<div class="ghome"><div class="glogo">Google</div><form id="' + wid + '_f"><input id="' + wid + '_q2" placeholder="Suchen…"><button type="submit">Google Suche</button></form></div>';
+      $(wid + "_f").onsubmit = function (e) {
+        e.preventDefault();
+        go($(wid + "_q2").value);
+      };
+      inp.value = "";
+    }
+    function go(q) {
+      q = (q || "").trim();
+      if (!q) return home();
+      inp.value = q;
+      var u = "https://www.google.com/search?igu=1&q=" + encodeURIComponent(q);
+      pane.innerHTML = "";
+      var fr = document.createElement("iframe");
+      fr.src = u;
+      fr.style.cssText = "position:absolute;inset:0;width:100%;height:100%;border:none;background:#fff";
+      pane.appendChild(fr);
+      setTimeout(function () {
+        var tip = document.createElement("div");
+        tip.style.cssText = "position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;z-index:5;display:flex;gap:8px";
+        tip.innerHTML = "<span>Leer?</span>";
+        var b = document.createElement("button");
+        b.className = "btn btn-p";
+        b.style.cssText = "padding:4px 10px;font-size:12px";
+        b.textContent = "DuckDuckGo";
+        b.onclick = function () {
+          fr.src = "https://duckduckgo.com/?q=" + encodeURIComponent(q);
+        };
+        tip.appendChild(b);
+        pane.appendChild(tip);
+        setTimeout(function () { tip.remove(); }, 5000);
+      }, 3500);
+    }
+    $(wid + "_go").onclick = function () { go(inp.value); };
+    inp.onkeydown = function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        go(inp.value);
+      }
+    };
+    $(wid + "_h").onclick = home;
+    home();
+  }
+
+  var GAMES = [
+    { n: 1, name: "Spiel 1", sub: "Ragdoll Sandbox", desc: "Physik-Sandbox" },
+    { n: 2, name: "Spiel 2", sub: "Snake", desc: "Schlange" },
+    { n: 3, name: "Spiel 3", sub: "Pong", desc: "Ball" },
+    { n: 4, name: "Spiel 4", sub: "Breakout", desc: "Ziegel" },
+    { n: 5, name: "Spiel 5", sub: "Memory", desc: "Paare" },
+    { n: 6, name: "Spiel 6", sub: "TicTacToe", desc: "3 gewinnt" },
+    { n: 7, name: "Spiel 7", sub: "Clicker", desc: "Klicken" },
+    { n: 8, name: "Spiel 8", sub: "Flappy", desc: "Fliegen" },
+    { n: 9, name: "Spiel 9", sub: "Maze", desc: "Labyrinth" },
+    { n: 10, name: "Spiel 10", sub: "Reaction", desc: "Reaktion" }
+  ];
+
+  function gamesFolder(c, wid) {
+    c.innerHTML = '<div class="gfolder"><h2>🕹️ Spiele</h2><p class="desc">10 Spiele – jedes Modul separat geladen.</p><div class="ggrid">' +
+      GAMES.map(function (g) {
+        return '<button type="button" class="gcard" data-n="' + g.n + '"><div class="gn">' + g.name + '</div><div class="gs">' + g.sub + '</div><div class="gd">' + g.desc + "</div></button>";
+      }).join("") + "</div></div>";
+    c.querySelectorAll("[data-n]").forEach(function (b) {
+      b.onclick = function () {
+        var n = +b.getAttribute("data-n");
+        var g = GAMES.find(function (x) { return x.n === n; });
+        openApp("game", { n: n, title: g.name + " – " + g.sub, icon: "🕹️" });
+      };
+    });
+  }
+
+  function loadGameScript(n) {
+    return new Promise(function (resolve, reject) {
+      if (window.W5Games && window.W5Games[n]) {
+        resolve(window.W5Games[n]);
+        return;
+      }
+      var s = document.createElement("script");
+      s.src = "games/spiel" + n + ".js";
+      s.onload = function () {
+        if (window.W5Games && window.W5Games[n]) resolve(window.W5Games[n]);
+        else reject(new Error("Spiel " + n + " nicht gefunden"));
+      };
+      s.onerror = function () { reject(new Error("Laden fehlgeschlagen: Spiel " + n)); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function playGame(c, wid, n) {
+    c.innerHTML = '<div class="gplay"><div class="ginfo">Lade Spiel ' + n + "…</div></div>";
+    loadGameScript(n).then(function (startFn) {
+      c.innerHTML = '<div class="gplay"><canvas id="' + wid + '_cv" width="360" height="400"></canvas><div class="ginfo" id="' + wid + '_info"></div><button class="btn btn-s" id="' + wid + '_rst">Neu</button></div>';
+      var canvas = $(wid + "_cv");
+      var ctx = canvas.getContext("2d");
+      var info = $(wid + "_info");
+      var stop = startFn(canvas, ctx, info);
+      $(wid + "_rst").onclick = function () {
+        if (typeof stop === "function") stop();
+        playGame(c, wid, n);
+      };
+    }).catch(function (err) {
+      c.innerHTML = '<div style="padding:16px;color:#f55">' + err.message + "</div>";
+    });
+  }
+
+  function robloxApp(c, wid) {
+    c.innerHTML = '<div class="rx"><div class="big">🎮</div><h1>Roblox</h1><p>Launcher</p><div class="acts"><button class="btn btn-p" id="' + wid + '_c">▶ Client starten</button><button class="btn btn-s" id="' + wid + '_w">Website</button></div><div class="rx-note">Echte Roblox-Spiele brauchen den Client. Die 10 Spiele im Ordner Spiele laufen hier direkt.</div></div>';
+    $(wid + "_c").onclick = function () {
+      var a = document.createElement("a");
+      a.href = "roblox://";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast("Roblox", "Client…", "🎮");
+    };
+    $(wid + "_w").onclick = function () {
+      c.style.position = "relative";
+      c.innerHTML = '<div class="rxframe"><div class="top"><button class="btn btn-s" id="' + wid + '_b">←</button></div><iframe src="https://translate.google.com/translate?hl=de&sl=auto&tl=de&u=' + encodeURIComponent("https://www.roblox.com") + '" style="flex:1;border:none;width:100%"></iframe></div>';
+      $(wid + "_b").onclick = function () { robloxApp(c, wid); };
+    };
+  }
+
+  function filesApp(c, wid) {
+    function draw() {
+      var n = Object.keys(vfs);
+      c.innerHTML = '<div class="files"><h2>📁 Dateien</h2><input type="file" id="' + wid + '_f" multiple style="display:none"><button class="btn btn-p" id="' + wid + '_u">📤 Hochladen</button><div style="margin-top:12px">' +
+        (n.length ? n.map(function (x) {
+          return '<div class="frow"><span>📄</span><div class="fmeta"><div class="fname">' + x + '</div></div><button class="btn btn-p" data-d="' + x + '" style="padding:6px 10px;font-size:12px">⬇</button><button class="btn btn-s" data-r="' + x + '" style="padding:6px 8px">🗑</button></div>';
+        }).join("") : '<p style="opacity:.5;padding:12px;text-align:center">Leer</p>') + "</div></div>";
+      $(wid + "_u").onclick = function () { $(wid + "_f").click(); };
+      $(wid + "_f").onchange = async function (e) {
+        var files = e.target.files || [];
+        for (var i = 0; i < files.length; i++) {
+          var f = files[i];
+          if (f.size > 3e6) continue;
+          var data = await new Promise(function (res, rej) {
+            var r = new FileReader();
+            r.onload = function () { res(r.result); };
+            r.onerror = rej;
+            r.readAsDataURL(f);
+          });
+          vfs[f.name] = { data: data, size: f.size };
+          toast("OK", f.name, "📥");
+        }
+        saveVfs();
+        draw();
+      };
+      c.querySelectorAll("[data-d]").forEach(function (b) {
+        b.onclick = function () {
+          var a = document.createElement("a");
+          a.href = vfs[b.getAttribute("data-d")].data;
+          a.download = b.getAttribute("data-d");
+          a.click();
+        };
+      });
+      c.querySelectorAll("[data-r]").forEach(function (b) {
+        b.onclick = function () {
+          delete vfs[b.getAttribute("data-r")];
+          saveVfs();
+          draw();
+        };
+      });
+    }
+    draw();
+  }
+
+  function closeW(id) {
+    var w = wins.get(id);
+    if (!w) return;
+    w.el.remove();
+    wins.delete(id);
+    taskbar();
+  }
+  function minW(id) {
+    var w = wins.get(id);
+    if (!w) return;
+    w.el.classList.add("min");
+    w.min = true;
+    taskbar();
+  }
+  function maxW(id) {
+    var w = wins.get(id);
+    if (!w) return;
+    w.el.classList.toggle("max");
+    w.max = w.el.classList.contains("max");
+  }
+  function focusW(id) {
+    wins.forEach(function (w, i) { w.el.classList.toggle("focus", i === id); });
+    var w = wins.get(id);
+    if (w) {
+      w.el.style.zIndex = ++z;
+      w.el.classList.remove("min");
+      w.min = false;
+      focused = id;
+    }
+    taskbar();
+  }
+  function taskbar() {
+    var tb = $("tb-apps");
+    tb.innerHTML = "";
+    wins.forEach(function (w, id) {
+      var app = apps.find(function (a) { return a.id === w.appId; }) || { icon: "🕹️" };
+      var b = document.createElement("button");
+      b.className = "tb-a" + (focused === id ? " on" : "");
+      b.textContent = app.icon || "📦";
+      b.onclick = function () {
+        if (w.min || focused !== id) focusW(id);
+        else minW(id);
+      };
+      tb.appendChild(b);
+    });
+  }
+  function drag(el, id) {
+    var tb = el.querySelector(".wt");
+    var ox, oy, sl, st, d = false;
+    function start(x, y) {
+      var w = wins.get(id);
+      if (!w || w.max) return;
+      d = true;
+      ox = x; oy = y;
+      sl = parseInt(el.style.left) || 0;
+      st = parseInt(el.style.top) || 0;
+      focusW(id);
+    }
+    function move(x, y) {
+      if (!d) return;
+      el.style.left = Math.max(0, sl + x - ox) + "px";
+      el.style.top = Math.max(0, st + y - oy) + "px";
+    }
+    tb.onmousedown = function (e) {
+      if (e.target.closest(".wb")) return;
+      start(e.clientX, e.clientY);
+      e.preventDefault();
+    };
+    window.addEventListener("mousemove", function (e) { move(e.clientX, e.clientY); });
+    window.addEventListener("mouseup", function () { d = false; });
+    tb.ontouchstart = function (e) {
+      if (e.target.closest(".wb")) return;
+      var t = e.touches[0];
+      start(t.clientX, t.clientY);
+    };
+    tb.ontouchmove = function (e) {
+      if (!d) return;
+      e.preventDefault();
+      var t = e.touches[0];
+      move(t.clientX, t.clientY);
+    };
+    tb.ontouchend = function () { d = false; };
+  }
+  function clock() {
+    function t() {
+      $("clock").textContent = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+    }
+    t();
+    setInterval(t, 1000);
+  }
+
+  boot().then(login).then(function () {
+    desktop();
+    clock();
+    toast("Windos 5", "Bereit", "🔴");
+  });
 })();
