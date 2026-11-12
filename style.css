@@ -90,12 +90,13 @@ input,textarea{user-select:text!important;-webkit-user-select:text!important;poi
 .gfolder h2{margin-bottom:6px}
 .gfolder .desc{font-size:12px;opacity:.6;margin-bottom:12px}
 .ggrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.gcard{text-align:left;padding:12px;border:1px solid #333;border-radius:10px;background:#1a1a1a;color:#eee;cursor:pointer}
+.gcard{text-align:left;padding:10px;border:1px solid #333;border-radius:10px;background:#1a1a1a;color:#eee;cursor:pointer}
 .gcard:hover{border-color:#ff1b2d}
-.gcard .gn{font-weight:700;font-size:14px}
-.gcard .gs{color:#ff1b2d;font-size:13px;margin:2px 0}
-.gcard .gd{font-size:11px;opacity:.55}
+.gcard img{display:block;width:100%;height:72px;object-fit:cover;border-radius:6px;background:#222;margin-bottom:6px}
+.gcard .gn{font-weight:700;font-size:13px}
+.gcard .gs{color:#ff1b2d;font-size:12px;margin:2px 0}
 .gplay{display:flex;flex-direction:column;align-items:center;padding:8px;height:100%}
 .gplay canvas{background:#111;border-radius:8px;max-width:100%;touch-action:none}
 .ginfo{font-size:12px;opacity:.75;margin:6px 0;text-align:center}
+.fw-links button{padding:9px 12px;border:1px solid #333;border-radius:8px;background:#1a1a1a;color:#eee;cursor:pointer}
 @media(pointer:coarse){.icon{width:82px}.icon .ii{font-size:36px}#tb{height:54px}.tb-b,.tb-a{width:48px;height:44px}.wb{width:50px;height:40px}}
