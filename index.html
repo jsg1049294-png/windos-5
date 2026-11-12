@@ -1,157 +1,76 @@
 <!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#ff1b2d">
-  <title>Windos 5</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles/desktop.css">
-  <link rel="stylesheet" href="styles/windows.css">
-  <link rel="stylesheet" href="styles/apps.css">
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+<html lang="de"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ff1b2d">
+<title>Windos 5</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;font-family:system-ui,sans-serif;background:#000;color:#f0f0f0;user-select:none}
+input,textarea{user-select:text!important;-webkit-user-select:text!important;pointer-events:auto!important;font-family:inherit}
+.hidden{display:none!important}
+.bios-screen{position:fixed;inset:0;background:#000;z-index:100000;padding:24px;font-family:monospace;color:#c0c0c0;font-size:14px;white-space:pre-wrap}
+.boot-screen{position:fixed;inset:0;background:radial-gradient(ellipse at center,#1a0a0c,#0d0d0d 55%,#000);display:flex;align-items:center;justify-content:center;z-index:99999;transition:opacity .6s}
+.boot-screen.fade-out{opacity:0;pointer-events:none}
+.gx-title{font-size:36px;font-weight:800;letter-spacing:6px;margin-top:12px;text-align:center}
+.gx-title span{color:#ff1b2d;text-shadow:0 0 16px rgba(255,27,45,.45)}
+.boot-bar{width:220px;height:3px;background:#222;margin:24px auto 12px;border-radius:2px;overflow:hidden}
+.boot-bar-fill{height:100%;width:0;background:linear-gradient(90deg,#c41424,#ff1b2d);transition:width .3s}
+.login-screen{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 20%,rgba(255,27,45,.2),transparent 50%),#0a0a0a}
+.login-card{width:min(360px,calc(100vw - 32px));background:rgba(18,18,18,.92);border:1px solid rgba(255,27,45,.25);border-radius:16px;padding:40px 32px;text-align:center}
+.login-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#ff1b2d,#8b0000);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin:0 auto 16px;box-shadow:0 0 24px rgba(255,27,45,.45)}
+.login-input{width:100%;padding:12px 16px;border:1px solid #333;border-radius:8px;background:#0a0a0a;color:#fff;font-size:15px;outline:none;margin:12px 0 8px}
+.login-input:focus{border-color:#ff1b2d}
+.login-btn{width:100%;padding:12px;border:none;border-radius:8px;background:linear-gradient(135deg,#ff1b2d,#c41424);color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.login-error{color:#ff1b2d;font-size:12px;min-height:18px}
+.desktop{position:relative;width:100%;height:100%;overflow:hidden}
+.wallpaper{position:absolute;inset:0;background:radial-gradient(ellipse at 15% 30%,rgba(255,27,45,.22),transparent 45%),linear-gradient(165deg,#0a0a0a,#120808 35%,#0d0d0d)}
+.desktop-icons{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:8px;z-index:10;max-height:calc(100% - 70px)}
+.desktop-icon{width:80px;padding:8px 4px;border-radius:6px;cursor:pointer;text-align:center}
+.desktop-icon:hover,.desktop-icon.selected{background:rgba(255,255,255,.12)}
+.desktop-icon .icon-img{font-size:36px;margin-bottom:4px}
+.desktop-icon .icon-label{font-size:12px;color:#fff;text-shadow:0 1px 3px #000}
+.taskbar{position:absolute;bottom:0;left:0;right:0;height:48px;background:rgba(32,32,32,.85);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 8px;z-index:5000;gap:4px}
+.taskbar-btn{width:44px;height:40px;border:none;background:transparent;color:#fff;border-radius:4px;cursor:pointer;font-size:18px}
+.taskbar-btn:hover{background:rgba(255,255,255,.1)}
+.taskbar-apps{flex:1;display:flex;justify-content:center;gap:4px}
+.taskbar-app{width:44px;height:40px;border:none;background:transparent;border-radius:4px;cursor:pointer;font-size:20px;position:relative;color:#fff}
+.taskbar-app.active{background:rgba(255,255,255,.15)}
+.taskbar-app.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:16px;height:3px;background:#ff1b2d;border-radius:2px}
+.clock{margin-left:auto;text-align:right;padding:0 10px;font-size:13px}
+.start-menu{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);width:min(400px,calc(100vw - 24px));max-height:70vh;background:rgba(32,32,32,.95);border-radius:12px;border:1px solid rgba(255,255,255,.1);z-index:6000;overflow:auto;padding:16px}
+.app-list-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:8px;cursor:pointer}
+.app-list-item:hover{background:rgba(255,255,255,.1)}
+.window{position:absolute;min-width:280px;min-height:180px;background:#1e1e1e;border-radius:8px;box-shadow:0 12px 48px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden;z-index:100}
+.window.focused{box-shadow:0 16px 56px rgba(0,0,0,.65),0 0 0 1px rgba(255,27,45,.3)}
+.window.maximized{top:0!important;left:0!important;width:100%!important;height:calc(100% - 48px)!important;border-radius:0}
+.window.minimized{display:none!important}
+.window-titlebar{height:36px;background:#2d2d2d;display:flex;align-items:center;padding:0 4px 0 12px;cursor:move;flex-shrink:0}
+.window-title{flex:1;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.window-controls{display:flex;z-index:30}
+.window-btn{width:46px;height:36px;border:none;background:transparent;color:#fff;cursor:pointer;font-size:14px;pointer-events:auto!important}
+.window-btn:hover{background:rgba(255,255,255,.1)}
+.window-btn.close:hover{background:#e81123}
+.window-content{flex:1;overflow:auto;background:#1e1e1e;user-select:text;-webkit-user-select:text;pointer-events:auto}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(20,10,12,.95);border:1px solid rgba(255,27,45,.25);padding:12px 20px;border-radius:8px;z-index:10000;font-size:14px}
+.form-input{width:100%;padding:10px 12px;border:1px solid #333;border-radius:6px;background:#0d0d0d;color:#fff;margin-bottom:8px;outline:none}
+.btn-primary{padding:10px 20px;background:linear-gradient(135deg,#ff1b2d,#c41424);border:none;border-radius:6px;color:#fff;cursor:pointer}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:12px}
+.calc-btn{padding:16px;border:none;border-radius:8px;background:#2a2a2a;color:#fff;font-size:18px;cursor:pointer}
+.calc-display{grid-column:1/-1;padding:16px;background:#111;border-radius:8px;text-align:right;font-size:28px;min-height:48px}
+.notes-ta{width:100%;height:100%;background:#0d0d0d;color:#eee;border:none;outline:none;padding:12px;resize:none}
+.term-out{padding:12px;font-family:monospace;font-size:13px;color:#0f0;white-space:pre-wrap;flex:1;overflow:auto}
+.term-input{flex:1;background:#0d0d0d;color:#0f0;border:none;outline:none;font-family:monospace;padding:8px}
+@media(pointer:coarse){.desktop-icon{width:88px}.desktop-icon .icon-img{font-size:40px}.taskbar{height:56px}.taskbar-btn,.taskbar-app{width:52px;height:48px}.window-btn{width:52px;height:40px}}
+</style>
 </head>
 <body>
-  <div id="bios-screen" class="bios-screen">
-    <pre id="bios-text" class="bios-text"></pre>
-  </div>
-  <div id="boot-screen" class="boot-screen hidden">
-    <div class="boot-logo">
-      <div class="gx-logo">
-        <svg viewBox="0 0 120 120" width="100" height="100">
-          <circle cx="60" cy="60" r="54" fill="none" stroke="#ff1b2d" stroke-width="4"/>
-          <path d="M35 70 Q60 20 85 70 Q60 95 35 70" fill="#ff1b2d"/>
-          <circle cx="60" cy="58" r="12" fill="#0d0d0d"/>
-        </svg>
-      </div>
-      <div class="boot-text gx-title">OPERA <span>GX</span></div>
-      <div class="boot-sub">Gaming Browser System</div>
-      <div class="boot-bar"><div class="boot-bar-fill" id="boot-bar-fill"></div></div>
-      <div class="boot-status" id="boot-status">System wird gestartet…</div>
-    </div>
-  </div>
-  <div id="login-screen" class="login-screen hidden">
-    <div class="login-bg"></div>
-    <div class="login-card">
-      <div class="login-avatar">A</div>
-      <div class="login-name">Alessio</div>
-      <div class="login-hint">Windos 5</div>
-      <form id="login-form" autocomplete="off">
-        <input type="password" id="login-password" class="login-input" placeholder="Passwort" autocomplete="off">
-        <div id="login-error" class="login-error"></div>
-        <button type="submit" class="login-btn">Anmelden</button>
-      </form>
-      <div class="login-footer">
-        <span>Passwort: heyduhacker123</span>
-        <span class="login-time" id="login-time"></span>
-      </div>
-    </div>
-  </div>
-  <div id="desktop" class="desktop hidden">
-    <div id="wallpaper" class="wallpaper gx-wallpaper"></div>
-    <div id="desktop-icons" class="desktop-icons"></div>
-    <div id="windows-container"></div>
-    <div id="start-menu" class="start-menu hidden">
-      <div class="start-menu-header">
-        <div class="user-profile" id="user-profile">
-          <div class="user-avatar">A</div>
-          <span class="user-name">Alessio</span>
-        </div>
-        <button class="power-btn" id="power-btn" title="Ausschalten">⏻</button>
-      </div>
-      <div class="start-search">
-        <input type="text" id="start-search" placeholder="GX suchen…" autocomplete="off">
-      </div>
-      <div class="start-pinned">
-        <div class="section-title">Angeheftet</div>
-        <div id="pinned-apps" class="app-grid"></div>
-      </div>
-      <div class="start-all">
-        <div class="section-title">Alle Apps</div>
-        <div id="all-apps" class="app-list"></div>
-      </div>
-    </div>
-    <div id="notification-center" class="notification-center hidden">
-      <div class="nc-header">
-        <span>Benachrichtigungen</span>
-        <button id="clear-notifications">Alle löschen</button>
-      </div>
-      <div id="notifications-list" class="notifications-list"></div>
-      <div class="quick-settings">
-        <div class="qs-item" data-action="wifi"><span>📶</span><span>WLAN</span></div>
-        <div class="qs-item" data-action="bluetooth"><span>🔵</span><span>Bluetooth</span></div>
-        <div class="qs-item" data-action="airplane"><span>✈️</span><span>Flugmodus</span></div>
-        <div class="qs-item" data-action="night"><span>🌙</span><span>Nachtlicht</span></div>
-        <div class="qs-item" data-action="focus"><span>🎯</span><span>GX Control</span></div>
-        <div class="qs-item" data-action="cast"><span>📺</span><span>Übertragen</span></div>
-      </div>
-      <div class="volume-slider">
-        <span>🔊</span>
-        <input type="range" id="volume-slider" min="0" max="100" value="70">
-        <span id="volume-value">70</span>
-      </div>
-    </div>
-    <div id="context-menu" class="context-menu hidden">
-      <div class="ctx-item" data-action="view">Ansicht</div>
-      <div class="ctx-item" data-action="sort">Sortieren nach</div>
-      <div class="ctx-item" data-action="refresh">Aktualisieren</div>
-      <div class="ctx-separator"></div>
-      <div class="ctx-item" data-action="new-folder">Neuer Ordner</div>
-      <div class="ctx-separator"></div>
-      <div class="ctx-item" data-action="personalize">Personalisieren</div>
-      <div class="ctx-item" data-action="display">Anzeigeeinstellungen</div>
-    </div>
-    <div id="taskbar" class="taskbar">
-      <div class="taskbar-left">
-        <button id="start-btn" class="taskbar-btn start-btn" title="Start">
-          <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 14 Q12 5 17 14 Q12 18 7 14" fill="currentColor"/></svg>
-        </button>
-        <button id="search-btn" class="taskbar-btn" title="Suche">🔍</button>
-        <button id="task-view-btn" class="taskbar-btn" title="Aufgabenansicht">▦</button>
-      </div>
-      <div id="taskbar-apps" class="taskbar-apps"></div>
-      <div class="taskbar-right">
-        <button id="tray-btn" class="taskbar-btn tray-btn" title="Ausgeblendete Symbole">⌃</button>
-        <div class="system-tray">
-          <span id="wifi-icon" title="WLAN">📶</span>
-          <span id="volume-icon" title="Lautstärke">🔊</span>
-          <span id="battery-icon" title="Akku">🔋</span>
-        </div>
-        <div id="clock" class="clock" title="Datum und Uhrzeit">
-          <div id="clock-time">00:00</div>
-          <div id="clock-date">01.01.2026</div>
-        </div>
-        <button id="notif-btn" class="taskbar-btn" title="Benachrichtigungen">💬</button>
-      </div>
-    </div>
-  </div>
-  <canvas id="matrix-canvas" class="matrix-canvas hidden"></canvas>
-  <script src="script.js"></script>
-  <script src="apps/terminal.js"></script>
-  <script src="apps/notes.js"></script>
-  <script src="apps/browser.js"></script>
-  <script src="apps/explorer.js"></script>
-  <script src="apps/calculator.js"></script>
-  <script src="apps/paint.js"></script>
-  <script src="apps/settings.js"></script>
-  <script src="apps/calendar.js"></script>
-  <script src="apps/clock.js"></script>
-  <script src="apps/music.js"></script>
-  <script src="apps/video.js"></script>
-  <script src="apps/image-viewer.js"></script>
-  <script src="apps/notepad.js"></script>
-  <script src="apps/task-manager.js"></script>
-  <script src="apps/app-store.js"></script>
-  <script src="apps/system-info.js"></script>
-  <script src="apps/recycle-bin.js"></script>
-  <script src="apps/screenshot.js"></script>
-  <script src="apps/todo.js"></script>
-  <script src="apps/unit-converter.js"></script>
-  <script src="apps/voice-recorder.js"></script>
-  <script src="apps/converter.js"></script>
-  <script src="apps/minesweeper.js"></script>
-</body>
-</html>
+<div id="bios-screen" class="bios-screen"></div>
+<div id="boot-screen" class="boot-screen hidden"><div><div class="gx-title">OPERA <span>GX</span></div><div style="opacity:.5;letter-spacing:3px;text-align:center;margin-top:8px">WINDOS 5</div><div class="boot-bar"><div class="boot-bar-fill" id="boot-bar-fill"></div></div><div id="boot-status" style="font-size:12px;opacity:.5;text-align:center">Startet…</div></div></div>
+<div id="login-screen" class="login-screen hidden"><div class="login-card"><div class="login-avatar">A</div><div style="font-size:22px;font-weight:600">Alessio</div><div style="font-size:12px;opacity:.5;margin:4px 0 16px">Windos 5</div><form id="login-form"><input type="password" id="login-password" class="login-input" placeholder="Passwort"><div id="login-error" class="login-error"></div><button type="submit" class="login-btn">Anmelden</button></form><div style="margin-top:16px;font-size:11px;opacity:.4">Passwort: heyduhacker123</div></div></div>
+<div id="desktop" class="desktop hidden"><div class="wallpaper"></div><div id="desktop-icons" class="desktop-icons"></div><div id="windows-container"></div>
+<div id="start-menu" class="start-menu hidden"><div style="font-weight:600;margin-bottom:12px">Apps</div><div id="all-apps"></div></div>
+<div id="taskbar" class="taskbar"><button id="start-btn" class="taskbar-btn">⊞</button><div id="taskbar-apps" class="taskbar-apps"></div><div class="clock" id="clock"><div id="clock-time">00:00</div></div></div>
+</div>
+<script src="pc.js"></script>
+</body></html>
