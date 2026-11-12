@@ -1,16 +1,11 @@
 {
   "name": "Windos 5 – Opera GX Virtual PC",
   "short_name": "Windos 5",
-  "description": "Virtueller Opera GX Desktop im Browser",
+  "description": "Virtueller Opera GX Gaming Desktop im Browser",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0d0d0d",
   "theme_color": "#ff1b2d",
   "orientation": "any",
-  "icons": [{
-    "src": "assets/icons/favicon.svg",
-    "sizes": "any",
-    "type": "image/svg+xml",
-    "purpose": "any maskable"
-  }]
+  "icons": [{"src": "assets/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}]
 }
