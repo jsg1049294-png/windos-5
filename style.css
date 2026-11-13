@@ -1,7 +1,12 @@
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;font-family:system-ui,sans-serif;background:#000;color:#f0f0f0;user-select:none}
-input,textarea,button{font-family:inherit}
-input,textarea{user-select:text!important;-webkit-user-select:text!important;pointer-events:auto!important}
+html,body{width:100%;height:100%;overflow:hidden;font-family:system-ui,sans-serif;background:#000;color:#f0f0f0}
+body{user-select:none;-webkit-user-select:none}
+input,textarea,select,[contenteditable="true"],.notes,.term-r input,.gbar input,.edge-nav input,.inp{
+  user-select:text!important;-webkit-user-select:text!important;
+  pointer-events:auto!important;touch-action:manipulation!important;
+  -webkit-touch-callout:default!important;
+}
+input,textarea,button,select{font-family:inherit}
 .hidden{display:none!important}
 #bios{position:fixed;inset:0;background:#000;z-index:100000;padding:20px;font-family:monospace;color:#aaa;font-size:13px;white-space:pre-wrap}
 #boot{position:fixed;inset:0;background:radial-gradient(ellipse at center,#1a0a0c,#0d0d0d 55%,#000);display:flex;align-items:center;justify-content:center;z-index:99999;transition:opacity .5s}
@@ -34,7 +39,7 @@ input,textarea{user-select:text!important;-webkit-user-select:text!important;poi
 .icon .il{font-size:11px;color:#fff;text-shadow:0 1px 3px #000;margin-top:2px}
 #tb{position:absolute;bottom:0;left:0;right:0;height:48px;background:rgba(32,32,32,.92);border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 8px;z-index:5000;gap:4px}
 .tb-b{width:42px;height:38px;border:none;background:0;color:#fff;border-radius:4px;cursor:pointer;font-size:17px}
-#tb-apps{flex:1;display:flex;justify-content:center;gap:4px}
+#tb-apps{flex:1;display:flex;justify-content:center;gap:4px;overflow:auto}
 .tb-a{width:42px;height:38px;border:none;background:0;border-radius:4px;cursor:pointer;font-size:18px;position:relative;color:#fff}
 .tb-a.on{background:rgba(255,255,255,.15)}
 .tb-a.on::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:14px;height:3px;background:#ff1b2d;border-radius:2px}
@@ -43,7 +48,7 @@ input,textarea{user-select:text!important;-webkit-user-select:text!important;poi
 .start-h{font-weight:600;margin-bottom:8px}
 .si{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer}
 .si:hover{background:rgba(255,255,255,.1)}
-.win{position:absolute;min-width:260px;min-height:160px;background:#1e1e1e;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden;z-index:100;touch-action:none}
+.win{position:absolute;min-width:260px;min-height:160px;background:#1e1e1e;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden;z-index:100}
 .win.focus{box-shadow:0 16px 48px rgba(0,0,0,.65),0 0 0 1px rgba(255,27,45,.3)}
 .win.max{top:0!important;left:0!important;width:100%!important;height:calc(100% - 48px)!important;border-radius:0}
 .win.min{display:none!important}
@@ -107,4 +112,11 @@ input,textarea{user-select:text!important;-webkit-user-select:text!important;poi
 .edge-nav input{flex:1;padding:8px 12px;border:1px solid #ccc;border-radius:20px;outline:none;font-size:13px;background:#f5f5f5;color:#222}
 .edge-nav button{border:none;background:transparent;color:#333;padding:6px 8px;border-radius:4px;cursor:pointer;font-size:14px}
 .edge-nav button:hover{background:#eee}
+.codebox{width:100%;height:100%;display:flex;flex-direction:column}
+.codebox textarea{flex:1;background:#0d1117;color:#c9d1d9;border:none;outline:none;padding:12px;font-family:ui-monospace,monospace;font-size:13px;resize:none}
+.codebox .bar{width:auto;height:auto;margin:0;padding:8px;background:#161b22;display:flex;gap:8px;flex-wrap:wrap}
+.devtools{display:flex;flex-direction:column;height:100%;font-family:monospace}
+.devtools .out{flex:1;overflow:auto;padding:10px;background:#0c0c0c;color:#0f0;white-space:pre-wrap;font-size:12px}
+.devtools .row{display:flex;gap:6px;padding:8px;border-top:1px solid #333}
+.devtools input{flex:1;background:#111;color:#0f0;border:1px solid #333;padding:8px;outline:none}
 @media(pointer:coarse){.icon{width:82px}.icon .ii{font-size:36px}#tb{height:54px}.tb-b,.tb-a{width:48px;height:44px}.wb{width:50px;height:40px}}
